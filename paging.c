@@ -105,16 +105,16 @@ void evict_FCFS(page_list* pl) {
 }
 
 
-int get_next_page_no(int curr_page_no) {
+int get_next_page_no(int curr_page_no,int max_page_size) {
     int x = rand()%10;
     if(x < 7) {
         x = curr_page_no+(rand()%3)-1 < 0;
     } else {
-        x = rand()%100;
-        while(abs(x-curr_page_no) <= 1) x = rand()%100;
+        x = rand()%max_page_size;
+        while(abs(x-curr_page_no) <= 1) x = rand()%max_page_size;
     }
     if(x < 0) x = 0;
-    if(x >= 100) x = 99;
+    if(x >= 100) x = max_page_size-1;
     return x;
 }
 
@@ -164,7 +164,7 @@ int main() {
         // Every 100ms a new request for a page is being made by all processes in memory.
         for(int i=0;i<10;i++) { // 100ms = 1s / 10, therefore 10 iterations
             for(int j=0;j<ix;j++) if(Q[j].duration > 0) {
-                Q[j].curr_page = get_next_page_no(Q[j].curr_page); // update current page no.
+                Q[j].curr_page = get_next_page_no(Q[j].curr_page,Q[j].page_count); // update current page no.
                 if(page_exists_in_memory(&pl,Q[j].pid,Q[j].curr_page)) { // page already exists in memory
                     // Note that eviction algorithms like LRU, LFU might need to update some metadata at this point. For example, for LRU
                     // we could have another variable 'last_used_time' in the page struct which would be updated to (sim_clock+0.1*i) which is
