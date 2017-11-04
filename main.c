@@ -50,6 +50,8 @@ int main() {
                     // Note that eviction algorithms like LRU, LFU might need to update some metadata at this point. For example, for LRU
                     // we could have another variable 'last_used_time' in the page struct which would be updated to (sim_clock+0.1*i) which is
                     // the time at which this page was referenced again. Since I am implementing FCFS, I don't need any extra book-keeping.
+                    Q[j].curr_page->count++;
+                    Q[j].curr_page->last_used = sim_clock;
                     continue;
                 }
 
@@ -58,7 +60,9 @@ int main() {
                 page* pg = get_free_page(&pl);
                 if(!pg) { // no free pages in memory!! need to evict a page
                     printf("Memory full. Evicting a page ... \n");
-                    evict_FCFS(&pl);
+//                    evict_FCFS(&pl);
+//                    evict_LRU(&pl);
+                    evict_LFU(&pl);
                     pg = get_free_page(&pl);
                 }
                 pg->pid = Q[j].pid;

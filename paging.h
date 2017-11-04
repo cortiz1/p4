@@ -23,6 +23,8 @@ typedef struct page {
     struct page* next;
 
     float brought_in_time; // denotes the time the page was first brought in memory
+    int last_used;          // this is a timestamp of the last time this page was used.
+    int count;              // this is a count of used for LFU
 } page;
 
 typedef struct {
@@ -36,9 +38,13 @@ int test_free_pages(page_list*,int); // test if atleast {count} no. of pages are
 int page_exists_in_memory(page_list*,int,int);
 page* get_free_page(page_list*);
 void free_memory(page_list*,int);
-void evict_FCFS(page_list*);
 int get_next_page_no(int,int);
 int compare_arrival_times(const void* ,const void*);
+
+void evict_FCFS(page_list*);
+void evict_LRU(page_list*);
+void evict_LFU(page_list*);
+
 
 
 #endif
