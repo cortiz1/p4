@@ -17,11 +17,12 @@ void display_page_list(page_list* pl) {
     page* it = pl->head;
     int cnt = 0;
     while(it) {
-        printf(it->pid > 0 ? "|%d |" : "|  |",it->pid);
+        printf(it->pid > 0 ? "| p[%03d] c:%02d l:%02d |" : "|                  |",it->pid, it->count, it->last_used);
         cnt++;
-        if((cnt % 20) == 0) printf("\n");
+        if((cnt % 10) == 0) printf("\n");
         it = it->next;
     }
+    printf("\n");
 }
 
 int test_free_pages(page_list* pl,int count) { // test if atleast {count} no. of pages are free

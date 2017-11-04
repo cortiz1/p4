@@ -1,6 +1,7 @@
 #ifndef PAGING_H
 #define PAGING_H
 
+#define DEBUG 1
 
 #include <stdio.h>
 #include <unistd.h>

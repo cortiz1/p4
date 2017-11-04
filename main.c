@@ -47,9 +47,9 @@ int main(int argc, char* argv[]) {
 
     int ix = 0; // index to the start of process queue
     for(sim_clock = 0; sim_clock < SIMULATION_DURATION; sim_clock++) {
-        printf("\n");
-        display_page_list(&pl);
-        printf("\n");
+//        printf("\n");
+//        display_page_list(&pl);
+//        printf("\n");
         // at the beginning of every second, look for new processes
         while(ix < NUMBER_OF_PROCS && Q[ix].arrival_time <= sim_clock) {
             // see if we have atleast 4 free pages
@@ -89,10 +89,12 @@ int main(int argc, char* argv[]) {
 
                 page* pg = get_free_page(&pl);
                 if(!pg) { // no free pages in memory!! need to evict a page
-                    printf("Memory full. Evicting a page ... \n");
-//                    evict_FCFS(&pl);
-//                    evict_LRU(&pl);
-                    evict_LFU(&pl);
+                    printf("Memory full, Page list:\n");
+                    display_page_list(&pl);
+
+                    evict_func(&pl);
+                    display_page_list(&pl);
+
                     pg = get_free_page(&pl);
                 }
                 pg->pid = Q[j].pid;
@@ -102,7 +104,7 @@ int main(int argc, char* argv[]) {
                 pg->count = 0;
                 printf("Page %d for process %d brought in at %f\n",Q[j].curr_page,Q[j].pid,pg->brought_in_time);
             }
-            //usleep(100*1000);
+
         }
 
         for(int j=0;j<ix;j++) if(Q[j].duration > 0) {
@@ -112,6 +114,7 @@ int main(int argc, char* argv[]) {
                 free_memory(&pl,Q[j].pid);
             }
         }
+        usleep(800);
     }
 }
 
