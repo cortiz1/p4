@@ -9,6 +9,7 @@
 #define NUMBER_OF_PROCS 150
 #define SIMULATION_DURATION 60 
 #define MAX_PROC_DURATION 7
+#define PAGE_LIST_SIZE 100
 
 extern int sim_clock;
 extern int *page_count_opts;

@@ -1,13 +1,13 @@
 #include "paging.h"
 
-void evict_LFU(page_list* pl) {
+void evict_MFU(page_list* pl) {
     page* it = pl->head;
     page* page_to_be_evicted = pl->head;
-    int min = it->count;
+    int max = it->count;
     while(it) {
-        if(it->count < min){
+        if(it->count > max){
             page_to_be_evicted = it;
-            min = it->count;
+            max = it->count;
         }
         it = it->next;
     }

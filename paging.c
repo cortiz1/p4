@@ -3,7 +3,7 @@
 void init_page_list(page_list* pl) {
     pl->head = malloc(sizeof(page));
     page* it = pl->head;
-    for(int i=0;i<100;i++) {
+    for(int i=0;i<PAGE_LIST_SIZE;i++) {
         it->pid = -1; it->page_no = -1;
         it->next = NULL;
         if(i < 99) {

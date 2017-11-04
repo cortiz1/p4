@@ -68,6 +68,8 @@ int main() {
                 pg->pid = Q[j].pid;
                 pg->page_no = Q[j].curr_page;
                 pg->brought_in_time = sim_clock+(0.1*i);
+                pg->last_used = sim_clock;
+                pg->count = 0;
                 printf("Page %d for process %d brought in at %f\n",Q[j].curr_page,Q[j].pid,pg->brought_in_time);
             }
             //usleep(100*1000);
