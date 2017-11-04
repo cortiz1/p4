@@ -1,6 +1,6 @@
 #include "paging.h"
 
-int main() {
+int main(int argc, char* argv[]) {
 
     int sim_clock = 0;
     int *page_count_opts = malloc(sizeof(int)*4);
@@ -11,6 +11,28 @@ int main() {
 
     page_list pl;
     init_page_list(&pl);
+
+    page *tp;
+
+    void (*evict_func)(page_list*);
+    if (argc != 2){
+        printf("valid options are: fcfs, lru, lfu, mfu or r.\n");
+        return -1;
+    }
+    if(strcmp(argv[1], "fcfs") == 0){
+        evict_func = evict_FCFS;
+    }else if(strcmp(argv[1], "lru") == 0){
+        evict_func = evict_LRU;
+    }else if(strcmp(argv[1], "lfu") == 0){
+        evict_func = evict_LFU;
+    }else if(strcmp(argv[1], "mfu") == 0){
+        evict_func = evict_MFU;
+    }else if(strcmp(argv[1], "r") == 0){
+        evict_func = evict_R;
+    }else {
+        printf("valid options are: fcfs, lru, lfu, mfu or r.\n");
+        return -1;
+    }
 
     srand(0);
     process Q[NUMBER_OF_PROCS];
@@ -36,6 +58,8 @@ int main() {
                 p->pid = Q[ix].pid;
                 p->page_no = Q[ix].curr_page;
                 p->brought_in_time = 1.0*sim_clock; // a metric need for FCFS eviction policy
+                p->count = 1;
+                p->last_used = sim_clock;
                 printf("Page %d for process %d brought in at %f\n",Q[ix].curr_page,Q[ix].pid,p->brought_in_time);
                 ix++;
             } else break; // not enough memory
@@ -50,8 +74,14 @@ int main() {
                     // Note that eviction algorithms like LRU, LFU might need to update some metadata at this point. For example, for LRU
                     // we could have another variable 'last_used_time' in the page struct which would be updated to (sim_clock+0.1*i) which is
                     // the time at which this page was referenced again. Since I am implementing FCFS, I don't need any extra book-keeping.
-                    Q[j].curr_page->count++;
-                    Q[j].curr_page->last_used = sim_clock;
+                    tp = get_page_from_pid(&pl,Q[j].pid,Q[j].curr_page);
+                    if (tp == NULL){
+                        printf("potential bug, got NULL from on a page that exists: pid %d page %d\n", Q[j].pid, Q[j].curr_page);
+                        return -1;
+                    }
+
+                    tp->count++;
+                    tp->last_used = sim_clock;
                     continue;
                 }
 

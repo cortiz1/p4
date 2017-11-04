@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define NUMBER_OF_PROCS 150
 #define SIMULATION_DURATION 60 
@@ -41,10 +42,13 @@ page* get_free_page(page_list*);
 void free_memory(page_list*,int);
 int get_next_page_no(int,int);
 int compare_arrival_times(const void* ,const void*);
+page* get_page_from_pid(page_list*,int,int);
 
 void evict_FCFS(page_list*);
 void evict_LRU(page_list*);
 void evict_LFU(page_list*);
+void evict_MFU(page_list*);
+void evict_R(page_list*);
 
 
 

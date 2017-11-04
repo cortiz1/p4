@@ -78,6 +78,15 @@ int get_next_page_no(int curr_page_no,int max_page_size) {
     return x;
 }
 
+page* get_page_from_pid(page_list* pl,int pid,int page_no) {
+    page* it = pl->head;
+    while(it) {
+        if(it->pid == pid && it->page_no == page_no) return it;
+        it = it->next;
+    }
+    return NULL;
+}
+
 int compare_arrival_times(const void* a,const void* b) {
     return ((process*)a)->arrival_time - ((process*)b)->arrival_time;
 }

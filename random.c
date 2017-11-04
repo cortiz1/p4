@@ -3,7 +3,7 @@
 void evict_R(page_list* pl) {
     page* it = pl->head;
     page* page_to_be_evicted = pl->head;
-    int max = it->count;
+    int count = 0;
     int r = rand() % PAGE_LIST_SIZE;
     while(it) {
         if(it->pid>0 && count < r){
