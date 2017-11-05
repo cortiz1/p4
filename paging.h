@@ -26,7 +26,7 @@ typedef struct page {
     struct page* next;
 
     float brought_in_time; // denotes the time the page was first brought in memory
-    int last_used;          // this is a timestamp of the last time this page was used.
+    float last_used;          // this is a timestamp of the last time this page was used.
     int count;              // this is a count of used for LFU
 } page;
 
