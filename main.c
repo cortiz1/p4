@@ -3,6 +3,7 @@
 int main(int argc, char* argv[]) {
 
     int sim_clock = 0;
+    int n = 0;
     int *page_count_opts = malloc(sizeof(int)*4);
     page_count_opts[0] = 5;
     page_count_opts[1] = 11;
@@ -34,11 +35,13 @@ int main(int argc, char* argv[]) {
     }
 
     int swappedinProc = 0;
-
+    int total_hits = 0;
+    int total_miss = 0;
     srand(0);
     for(int i = 0; i < 5; i++) {
         printf("===================== Run %d =================\n", i+1);
-        
+        total_hits = 0;
+        total_miss = 0;
         page_list pl;
         init_page_list(&pl);
         process Q[NUMBER_OF_PROCS];
@@ -67,10 +70,14 @@ int main(int argc, char* argv[]) {
                     p->brought_in_time = 1.0*sim_clock; // a metric need for FCFS eviction policy
                     p->count = 1;
                     p->last_used = sim_clock;
-                    printf("Page %d for process %d brought in at %f\n",Q[ix].curr_page,Q[ix].pid,p->brought_in_time);
+//                    printf("Page %d for process %d brought in at %03.3f\n",Q[ix].curr_page,Q[ix].pid,p->brought_in_time);
                     swappedinProc++;
                     ix++;
-                } else break; // not enough memory
+                } else{
+                    printf("Process idx %d pid %d  not allocated due to out of mem\n", ix, Q[ix].pid);
+                     break; // not enough memory
+                }
+
             }
 
 
@@ -90,6 +97,7 @@ int main(int argc, char* argv[]) {
 
                         tp->count++;
                         tp->last_used = sim_clock;
+                        total_hits++;
                         continue;
                     }
 
@@ -101,16 +109,18 @@ int main(int argc, char* argv[]) {
                         display_page_list(&pl);
 
                         evict_func(&pl);
+                        total_miss++;
                         display_page_list(&pl);
 
-                        pg = get_free_page(&pl);
+                        pg = get_free_page(&pl); // Does this guarantee a valid page?
+
                     }
                     pg->pid = Q[j].pid;
                     pg->page_no = Q[j].curr_page;
                     pg->brought_in_time = sim_clock+(0.1*i);
                     pg->last_used = sim_clock+(0.1*i);
                     pg->count = 0;
-                    printf("Page %d for process %d brought in at %f\n",Q[j].curr_page,Q[j].pid,pg->brought_in_time);
+                    printf("Page %d for process %d brought in at %03.3f\n",Q[j].curr_page,Q[j].pid,pg->brought_in_time);
                     swappedinProc++;
                 }
 
@@ -119,12 +129,14 @@ int main(int argc, char* argv[]) {
             for(int j=0;j<ix;j++) if(Q[j].duration > 0) {
                 Q[j].duration--;
                 if(Q[j].duration == 0) { // process has finished execution, free pages in memory
-                    printf("Process %d done. Freeing memory ... \n",Q[j].pid);
-                    free_memory(&pl,Q[j].pid);
+                    n = free_memory(&pl,Q[j].pid);
+                    printf("Process %d done. %d pages freed\n",Q[j].pid, n);
                 }
             }
+
             usleep(800);
         }
+        printf("Run %d: Hit(%d)/Miss(%d) Ratio\n\n", i+1, total_hits, total_miss);
     }
 
     printf("Averge number of processes that were successfully swapped in %d\n", (swappedinProc / 5));

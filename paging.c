@@ -17,7 +17,7 @@ void display_page_list(page_list* pl) {
     page* it = pl->head;
     int cnt = 0;
     while(it) {
-        printf(it->pid > 0 ? "| p[%03d] c:%02d l:%02f |" : "|                  |",it->pid, it->count, it->last_used);
+        printf(it->pid > 0 ? "| p[%03d] c:%02d l:%02.2f |" : "|                  |",it->pid, it->count, it->last_used);
         cnt++;
         if((cnt % 10) == 0) printf("\n");
         it = it->next;
@@ -55,15 +55,18 @@ page* get_free_page(page_list* pl) {
     return NULL;
 }
 
-void free_memory(page_list* pl,int pid) {
+int free_memory(page_list* pl,int pid) {
     page* it = pl->head;
+    int count = 0;
     while(it) {
         if(it->pid == pid) {
             it->pid = -1;
             it->page_no = -1;
+            count++;
         }
         it = it->next;
     }
+    return count;
 }
 
 int get_next_page_no(int curr_page_no,int max_page_size) {
