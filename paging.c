@@ -17,9 +17,9 @@ void display_page_list(page_list* pl) {
     page* it = pl->head;
     int cnt = 0;
     while(it) {
-        printf(it->pid > 0 ? "| p[%03d] c:%02d l:%02f |" : "|                  |",it->pid, it->count, it->last_used);
+        printf(it->pid >= 0 ? "| p[%03d] c:%02d l:%02f |" : "|                  |",it->pid, it->count, it->last_used);
         cnt++;
-        if((cnt % 10) == 0) printf("\n");
+        if((cnt % 6) == 0) printf("\n");
         it = it->next;
     }
     printf("\n");

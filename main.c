@@ -45,6 +45,7 @@ int main(int argc, char* argv[]) {
     }
     qsort(Q,NUMBER_OF_PROCS,sizeof(process),compare_arrival_times);
 
+    int hit = 0, total = 0;
     int ix = 0; // index to the start of process queue
     for(sim_clock = 0; sim_clock < SIMULATION_DURATION; sim_clock++) {
 //        printf("\n");
@@ -61,7 +62,7 @@ int main(int argc, char* argv[]) {
                 p->count = 1;
                 p->last_used = sim_clock;
                 printf("Page %d for process %d brought in at %f\n",Q[ix].curr_page,Q[ix].pid,p->brought_in_time);
-                ix++;
+                ix++; total++;
             } else break; // not enough memory
         }
 
@@ -69,8 +70,10 @@ int main(int argc, char* argv[]) {
         // Every 100ms a new request for a page is being made by all processes in memory.
         for(int i=0;i<10;i++) { // 100ms = 1s / 10, therefore 10 iterations
             for(int j=0;j<ix;j++) if(Q[j].duration > 0) {
+                total++;
                 Q[j].curr_page = get_next_page_no(Q[j].curr_page,Q[j].page_count); // update current page no.
                 if(page_exists_in_memory(&pl,Q[j].pid,Q[j].curr_page)) { // page already exists in memory
+                    hit++;
                     // Note that eviction algorithms like LRU, LFU might need to update some metadata at this point. For example, for LRU
                     // we could have another variable 'last_used_time' in the page struct which would be updated to (sim_clock+0.1*i) which is
                     // the time at which this page was referenced again. Since I am implementing FCFS, I don't need any extra book-keeping.
@@ -116,5 +119,6 @@ int main(int argc, char* argv[]) {
         }
         usleep(800);
     }
+    printf("Hit ratio: %.2f\n",(1.0*hit)/total);
 }
 
