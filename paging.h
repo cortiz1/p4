@@ -40,7 +40,7 @@ void display_page_list(page_list*);
 int test_free_pages(page_list*,int); // test if atleast {count} no. of pages are free
 int page_exists_in_memory(page_list*,int,int);
 page* get_free_page(page_list*);
-void free_memory(page_list*,int);
+int free_memory(page_list*,int);
 int get_next_page_no(int,int);
 int compare_arrival_times(const void* ,const void*);
 page* get_page_from_pid(page_list*,int,int);
