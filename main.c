@@ -35,6 +35,7 @@ int main(int argc, char* argv[]) {
     }
 
     int swappedinProc = 0;
+    float avg_hmratio = 0;
     int total_hits = 0;
     int total_miss = 0;
     srand(0);
@@ -57,9 +58,9 @@ int main(int argc, char* argv[]) {
 
         int ix = 0; // index to the start of process queue
         for(sim_clock = 0; sim_clock < SIMULATION_DURATION; sim_clock++) {
-    //        printf("\n");
-    //        display_page_list(&pl);
-    //        printf("\n");
+            //        printf("\n");
+            //        display_page_list(&pl);
+            //        printf("\n");
             // at the beginning of every second, look for new processes
             while(ix < NUMBER_OF_PROCS && Q[ix].arrival_time <= sim_clock) {
                 // see if we have atleast 4 free pages
@@ -70,12 +71,13 @@ int main(int argc, char* argv[]) {
                     p->brought_in_time = 1.0*sim_clock; // a metric need for FCFS eviction policy
                     p->count = 1;
                     p->last_used = sim_clock;
-//                    printf("Page %d for process %d brought in at %03.3f\n",Q[ix].curr_page,Q[ix].pid,p->brought_in_time);
+                    //                    printf("Page %d for process %d brought in at %03.3f\n",Q[ix].curr_page,Q[ix].pid,p->brought_in_time);
                     swappedinProc++;
+                    total_miss++; // note that the first page for any process is always gonna be a miss
                     ix++;
                 } else{
                     printf("Process idx %d pid %d  not allocated due to out of mem\n", ix, Q[ix].pid);
-                     break; // not enough memory
+                    break; // not enough memory
                 }
 
             }
@@ -112,7 +114,7 @@ int main(int argc, char* argv[]) {
                         total_miss++;
                         display_page_list(&pl);
 
-                        pg = get_free_page(&pl); // Does this guarantee a valid page?
+                        pg = get_free_page(&pl); // Does this guarantee a valid page? // Yes, it does. evict_func imperatively frees one page.
 
                     }
                     pg->pid = Q[j].pid;
@@ -121,7 +123,6 @@ int main(int argc, char* argv[]) {
                     pg->last_used = sim_clock+(0.1*i);
                     pg->count = 0;
                     printf("Page %d for process %d brought in at %03.3f\n",Q[j].curr_page,Q[j].pid,pg->brought_in_time);
-                    swappedinProc++;
                 }
 
             }
@@ -137,8 +138,9 @@ int main(int argc, char* argv[]) {
             usleep(800);
         }
         printf("Run %d: Hit(%d)/Miss(%d) Ratio\n\n", i+1, total_hits, total_miss);
+        avg_hmratio = total_hits/(1.0*total_miss);
     }
-
     printf("Averge number of processes that were successfully swapped in %d\n", (swappedinProc / 5));
+    printf("Average hit/miss ratio: %.2f\n",(avg_hmratio/5));
 }
 
