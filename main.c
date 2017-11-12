@@ -10,11 +10,12 @@ int main(int argc, char* argv[]) {
     page_count_opts[2] = 17;
     page_count_opts[3] = 31;
 
-    *state_to_string[0] = "RU";
-    *state_to_string[1] = "WA";
-    *state_to_string[2] = "FI";
-    *state_to_string[3] = "RE";
-    *state_to_string[4] = "PE";
+    for(int i=0;i<5;i++) state_to_string[i] = malloc(3);
+    state_to_string[0] = "RU";
+    state_to_string[1] = "WA";
+    state_to_string[2] = "FI";
+    state_to_string[3] = "RE";
+    state_to_string[4] = "PE";
 
 
 
@@ -119,7 +120,7 @@ int main(int argc, char* argv[]) {
                         }else if (tp->state == LOADING) {
                             Q[j].io_cnt--;
                             printf("pid: %03d, page_count %03d, arrival_time %02d, duration %02d, curr_page %03d, state %s, io_cnt %d\n",
-                            Q[j].pid, Q[j].page_count, Q[j].arrival_time, Q[j].duration, Q[j].curr_page, *state_to_string[Q[j].state], Q[j].io_cnt);
+                            Q[j].pid, Q[j].page_count, Q[j].arrival_time, Q[j].duration, Q[j].curr_page, state_to_string[Q[j].state], Q[j].io_cnt);
                             if (Q[j].io_cnt <= 0){
                                 tp->brought_in_time = sim_clock+(0.1*i);
                                 tp->state = IN_MEM;

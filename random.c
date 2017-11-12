@@ -6,7 +6,7 @@ void evict_R(page_list* pl) {
     int count = 0;
     int r = rand() % PAGE_LIST_SIZE;
     while(it) {
-        if(it->pid>0 && count < r){
+        if(it->pid>=0 && count < r){
             page_to_be_evicted = it;
         }
         it = it->next;

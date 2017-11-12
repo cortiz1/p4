@@ -25,7 +25,7 @@ enum state{
     PENDING
 };
 
-char ** state_to_string[5];
+char * state_to_string[5];
 
 
 enum pg_state{
