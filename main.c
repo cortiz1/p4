@@ -10,6 +10,13 @@ int main(int argc, char* argv[]) {
     page_count_opts[2] = 17;
     page_count_opts[3] = 31;
 
+    *state_to_string[0] = "RU";
+    *state_to_string[1] = "WA";
+    *state_to_string[2] = "FI";
+    *state_to_string[3] = "RE";
+    *state_to_string[4] = "PE";
+
+
 
 
     page *tp;
@@ -53,27 +60,34 @@ int main(int argc, char* argv[]) {
             Q[i].arrival_time = rand()%60;
             Q[i].duration = rand() % MAX_PROC_DURATION;
             Q[i].curr_page = 0; // all processes begin with page 0
+            Q[i].state = READY;
         }
         qsort(Q,NUMBER_OF_PROCS,sizeof(process),compare_arrival_times);
 
         int ix = 0; // index to the start of process queue
         for(sim_clock = 0; sim_clock < SIMULATION_DURATION; sim_clock++) {
+            printf("\ntime: %d:\n", sim_clock);
             //        printf("\n");
             //        display_page_list(&pl);
             //        printf("\n");
             // at the beginning of every second, look for new processes
-            while(ix < NUMBER_OF_PROCS && Q[ix].arrival_time <= sim_clock) {
+            while(ix < NUMBER_OF_PROCS && Q[ix].arrival_time <= sim_clock && Q[ix].state == READY) {
+
                 // see if we have atleast 4 free pages
                 if(test_free_pages(&pl,4)) { // if yes, bring process in memory
                     page* p = get_free_page(&pl);
                     p->pid = Q[ix].pid;
                     p->page_no = Q[ix].curr_page;
-                    p->brought_in_time = 1.0*sim_clock; // a metric need for FCFS eviction policy
-                    p->count = 1;
-                    p->last_used = sim_clock;
-                    //                    printf("Page %d for process %d brought in at %03.3f\n",Q[ix].curr_page,Q[ix].pid,p->brought_in_time);
+//                    p->brought_in_time = 1.0*sim_clock; // a metric need for FCFS eviction policy
+//                    p->count = 1;
+                    p->state = LOADING;
+//                    p->last_used = sim_clock;
+//                    p->state = IN_MEM;
+//                    printf("Page %d for process %d brought in at %03.3f\n",Q[ix].curr_page,Q[ix].pid,p->brought_in_time);
                     swappedinProc++;
                     total_miss++; // note that the first page for any process is always gonna be a miss
+                    Q[ix].state = WAITING_IO;
+                    Q[ix].io_cnt = 2 + rand() % 3;
                     ix++;
                 } else{
                     printf("Process idx %d pid %d  not allocated due to out of mem\n", ix, Q[ix].pid);
@@ -97,9 +111,23 @@ int main(int argc, char* argv[]) {
                             return -1;
                         }
 
-                        tp->count++;
-                        tp->last_used = sim_clock;
-                        total_hits++;
+                        // page is already in mem lets check if its loading or ready to use
+                        if (tp->state == IN_MEM){
+                            tp->count++;
+                            tp->last_used = sim_clock;
+                            total_hits++;
+                        }else if (tp->state == LOADING) {
+                            Q[j].io_cnt--;
+                            printf("pid: %03d, page_count %03d, arrival_time %02d, duration %02d, curr_page %03d, state %s, io_cnt %d\n",
+                            Q[j].pid, Q[j].page_count, Q[j].arrival_time, Q[j].duration, Q[j].curr_page, *state_to_string[Q[j].state], Q[j].io_cnt);
+                            if (Q[j].io_cnt <= 0){
+                                tp->brought_in_time = sim_clock+(0.1*i);
+                                tp->state = IN_MEM;
+                                tp->last_used = sim_clock+(0.1*i);
+                                Q[j].state = RUNNING;
+                                tp->page_no = Q[j].curr_page;
+                            }
+                        }
                         continue;
                     }
 
@@ -109,33 +137,39 @@ int main(int argc, char* argv[]) {
                     if(!pg) { // no free pages in memory!! need to evict a page
                         printf("Memory full, Page list:\n");
                         display_page_list(&pl);
-
                         evict_func(&pl);
                         total_miss++;
+                        Q[j].io_cnt = 2 + rand() % 3;
                         display_page_list(&pl);
-
                         pg = get_free_page(&pl); // Does this guarantee a valid page? // Yes, it does. evict_func imperatively frees one page.
 
                     }
+
+                    if (pg->state != NOT_IN_MEM){
+                        printf("potential error got a free page with state: %d\n",pg->state);
+                    }
+
+                    Q[j].state = WAITING_IO;
+                    Q[j].io_cnt = 2 + rand() % 3;
+                    pg->state = LOADING;
                     pg->pid = Q[j].pid;
                     pg->page_no = Q[j].curr_page;
-                    pg->brought_in_time = sim_clock+(0.1*i);
-                    pg->last_used = sim_clock+(0.1*i);
                     pg->count = 0;
-                    printf("Page %d for process %d brought in at %03.3f\n",Q[j].curr_page,Q[j].pid,pg->brought_in_time);
                 }
+            } // end of the 100ms
 
-            }
-
-            for(int j=0;j<ix;j++) if(Q[j].duration > 0) {
+            // process by decrementing duration this will skipp processes that dont have state == RUNNING
+            for(int j=0;j<ix;j++) if(Q[j].duration > 0 && Q[j].state == RUNNING) {
                 Q[j].duration--;
                 if(Q[j].duration == 0) { // process has finished execution, free pages in memory
                     n = free_memory(&pl,Q[j].pid);
-                    printf("Process %d done. %d pages freed\n",Q[j].pid, n);
+                    Q[j].state = FINISHED;
+                    printf("Process %03d done. %d pages freed\n",Q[j].pid, n);
                 }
             }
 
             usleep(800);
+            print_proc_queue(Q);
         }
         printf("Run %d: Hit(%d)/Miss(%d) Ratio\n\n", i+1, total_hits, total_miss);
         avg_hmratio = total_hits/(1.0*total_miss);

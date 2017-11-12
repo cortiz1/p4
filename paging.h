@@ -16,8 +16,29 @@
 extern int sim_clock;
 extern int *page_count_opts;
 
+
+enum state{
+    RUNNING = 0,
+    WAITING_IO,
+    FINISHED,
+    READY,
+    PENDING
+};
+
+char ** state_to_string[5];
+
+
+enum pg_state{
+    LOADING = 0,
+    IN_MEM,
+    NOT_IN_MEM,
+};
+
+
 typedef struct {
     int pid, page_count, arrival_time, duration, curr_page;
+    enum state state;
+    int io_cnt;
 } process;
 
 typedef struct page {
@@ -28,6 +49,7 @@ typedef struct page {
     float brought_in_time; // denotes the time the page was first brought in memory
     float last_used;          // this is a timestamp of the last time this page was used.
     int count;              // this is a count of used for LFU
+    enum pg_state state;
 } page;
 
 typedef struct {
@@ -44,6 +66,7 @@ int free_memory(page_list*,int);
 int get_next_page_no(int,int);
 int compare_arrival_times(const void* ,const void*);
 page* get_page_from_pid(page_list*,int,int);
+void print_proc_queue(process* );
 
 void evict_FCFS(page_list*);
 void evict_LRU(page_list*);

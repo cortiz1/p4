@@ -5,6 +5,7 @@ void init_page_list(page_list* pl) {
     page* it = pl->head;
     for(int i=0;i<PAGE_LIST_SIZE;i++) {
         it->pid = -1; it->page_no = -1;
+        it->state = NOT_IN_MEM;
         it->next = NULL;
         if(i < 99) {
             it->next = malloc(sizeof(page));
@@ -17,9 +18,9 @@ void display_page_list(page_list* pl) {
     page* it = pl->head;
     int cnt = 0;
     while(it) {
-        printf(it->pid >= 0 ? "| p[%03d] c:%02d l:%02f |" : "|                  |",it->pid, it->count, it->last_used);
+        printf(it->pid >= 0 ? "| p[%03d] c:%02d l:%02.2f |" : "|                     |",it->pid, it->count, it->last_used);
         cnt++;
-        if((cnt % 6) == 0) printf("\n");
+        if((cnt % 5) == 0) printf("\n");
         it = it->next;
     }
     printf("\n");
@@ -62,6 +63,7 @@ int free_memory(page_list* pl,int pid) {
         if(it->pid == pid) {
             it->pid = -1;
             it->page_no = -1;
+            it->state = NOT_IN_MEM;
             count++;
         }
         it = it->next;
@@ -95,3 +97,14 @@ int compare_arrival_times(const void* a,const void* b) {
     return ((process*)a)->arrival_time - ((process*)b)->arrival_time;
 }
 
+void print_proc_queue(process* q){
+    int i;
+
+
+    for (i=0; i < NUMBER_OF_PROCS; i++){
+        if (q[i].state != READY){
+        printf("i: %03d, pid: %03d, page_count %03d, arrival_time %02d, duration %02d, curr_page %03d, state %s, io_cnt %d\n",
+         i, q[i].pid, q[i].page_count, q[i].arrival_time, q[i].duration, q[i].curr_page, *git state_to_string[q[i].state], q[i].io_cnt);
+         }
+    }
+}
