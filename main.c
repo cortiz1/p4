@@ -10,11 +10,12 @@ int main(int argc, char* argv[]) {
     page_count_opts[2] = 17;
     page_count_opts[3] = 31;
 
-    *state_to_string[0] = "RU";
-    *state_to_string[1] = "WA";
-    *state_to_string[2] = "FI";
-    *state_to_string[3] = "RE";
-    *state_to_string[4] = "PE";
+    for(int i=0;i<5;i++) state_to_string[i] = malloc(3);
+    state_to_string[0] = "RU";
+    state_to_string[1] = "WA";
+    state_to_string[2] = "FI";
+    state_to_string[3] = "RE";
+    state_to_string[4] = "PE";
 
 
 
@@ -88,6 +89,7 @@ int main(int argc, char* argv[]) {
                     total_miss++; // note that the first page for any process is always gonna be a miss
                     Q[ix].state = WAITING_IO;
                     Q[ix].io_cnt = 2 + rand() % 3;
+                    Q[ix].duration += Q[ix].io_cnt;
                     ix++;
                 } else{
                     printf("Process idx %d pid %d  not allocated due to out of mem\n", ix, Q[ix].pid);
@@ -118,8 +120,8 @@ int main(int argc, char* argv[]) {
                             total_hits++;
                         }else if (tp->state == LOADING) {
                             Q[j].io_cnt--;
-                            printf("pid: %03d, page_count %03d, arrival_time %02d, duration %02d, curr_page %03d, state %s, io_cnt %d\n",
-                            Q[j].pid, Q[j].page_count, Q[j].arrival_time, Q[j].duration, Q[j].curr_page, *state_to_string[Q[j].state], Q[j].io_cnt);
+                            printf("pid: %03d, page_count %03d, arrival_time %02d, duration %.2f, curr_page %03d, state %s, io_cnt %d\n",
+                            Q[j].pid, Q[j].page_count, Q[j].arrival_time, Q[j].duration, Q[j].curr_page, state_to_string[Q[j].state], Q[j].io_cnt);
                             if (Q[j].io_cnt <= 0){
                                 tp->brought_in_time = sim_clock+(0.1*i);
                                 tp->state = IN_MEM;
@@ -139,7 +141,7 @@ int main(int argc, char* argv[]) {
                         display_page_list(&pl);
                         evict_func(&pl);
                         total_miss++;
-                        Q[j].io_cnt = 2 + rand() % 3;
+                        Q[j].io_cnt = 2 + rand() % 3; //this line gets executed again at line# 155, therefore commenting it out
                         display_page_list(&pl);
                         pg = get_free_page(&pl); // Does this guarantee a valid page? // Yes, it does. evict_func imperatively frees one page.
 
@@ -151,6 +153,7 @@ int main(int argc, char* argv[]) {
 
                     Q[j].state = WAITING_IO;
                     Q[j].io_cnt = 2 + rand() % 3;
+                    Q[j].duration += Q[j].io_cnt;
                     pg->state = LOADING;
                     pg->pid = Q[j].pid;
                     pg->page_no = Q[j].curr_page;
@@ -160,8 +163,8 @@ int main(int argc, char* argv[]) {
 
             // process by decrementing duration this will skipp processes that dont have state == RUNNING
             for(int j=0;j<ix;j++) if(Q[j].duration > 0 && Q[j].state == RUNNING) {
-                Q[j].duration--;
-                if(Q[j].duration == 0) { // process has finished execution, free pages in memory
+                Q[j].duration -= 1.0;
+                if(Q[j].duration <= 0) { // process has finished execution, free pages in memory
                     n = free_memory(&pl,Q[j].pid);
                     Q[j].state = FINISHED;
                     printf("Process %03d done. %d pages freed\n",Q[j].pid, n);
@@ -172,7 +175,7 @@ int main(int argc, char* argv[]) {
             print_proc_queue(Q);
         }
         printf("Run %d: Hit(%d)/Miss(%d) Ratio\n\n", i+1, total_hits, total_miss);
-        avg_hmratio = total_hits/(1.0*total_miss);
+        avg_hmratio += total_hits/(1.0*total_miss);
     }
     printf("Averge number of processes that were successfully swapped in %d\n", (swappedinProc / 5));
     printf("Average hit/miss ratio: %.2f\n",(avg_hmratio/5));
