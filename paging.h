@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define NUMBER_OF_PROCS 150
+#define NUMBER_OF_PROCS 500
 #define SIMULATION_DURATION 60 
 #define MAX_PROC_DURATION 7
 #define PAGE_LIST_SIZE 100
@@ -36,7 +36,8 @@ enum pg_state{
 
 
 typedef struct {
-    int pid, page_count, arrival_time, duration, curr_page;
+    int pid, page_count, arrival_time, curr_page;
+    float duration;
     enum state state;
     int io_cnt;
 } process;

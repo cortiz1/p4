@@ -103,7 +103,7 @@ void print_proc_queue(process* q){
 
     for (i=0; i < NUMBER_OF_PROCS; i++){
         if (q[i].state != READY){
-        printf("i: %03d, pid: %03d, page_count %03d, arrival_time %02d, duration %02d, curr_page %03d, state %s, io_cnt %d\n",
+        printf("i: %03d, pid: %03d, page_count %03d, arrival_time %02d, duration %.2f, curr_page %03d, state %s, io_cnt %d\n",
          i, q[i].pid, q[i].page_count, q[i].arrival_time, q[i].duration, q[i].curr_page, state_to_string[q[i].state], q[i].io_cnt);
          }
     }
